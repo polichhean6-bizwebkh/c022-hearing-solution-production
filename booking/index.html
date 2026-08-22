@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Book an Appointment | Hearing Solution Cambodia</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../assets/logo/hearing-solution-logo-web.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/booking.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body class="lang-en">
+<div class="shell">
+
+  <div class="brand-row">
+    <a class="brand" href="../"><img src="../assets/logo/hearing-solution-logo-web.webp" alt="Hearing Solution Cambodia logo">Hearing Solution Cambodia</a>
+    <div class="lang-switch" role="group" aria-label="Language switch">
+      <button type="button" class="lang-btn is-active" data-lang-btn="en">EN</button>
+      <button type="button" class="lang-btn" data-lang-btn="kh">ខ្មែរ</button>
+    </div>
+  </div>
+
+  <p class="demo-notice" data-i18n="demo.banner">Please double-check your details before submitting. Our team will contact you to confirm your appointment.</p>
+
+  <div class="card">
+    <p class="eyebrow" data-i18n="eyebrow">Appointment request</p>
+    <h1 data-i18n="title.details">Let's find a time that works</h1>
+
+    <!-- Customers do not choose a doctor/specialist here — the clinic team
+         reviews each request and assigns the appropriate specialist
+         internally from the admin dashboard after it is submitted. -->
+    <ol class="steps" id="steps">
+      <li class="step step-current" data-step-index="0"><span class="step-dot">1</span><span class="step-label" data-i18n="step.patient">Patient Info</span></li>
+      <li class="step" data-step-index="1"><span class="step-dot">2</span><span class="step-label" data-i18n="step.service">Service</span></li>
+      <li class="step" data-step-index="2"><span class="step-dot">3</span><span class="step-label" data-i18n="step.dateTime">Date &amp; Time</span></li>
+      <li class="step" data-step-index="3"><span class="step-dot">4</span><span class="step-label" data-i18n="step.message">Concern</span></li>
+      <li class="step" data-step-index="4"><span class="step-dot">5</span><span class="step-label" data-i18n="step.review">Review</span></li>
+    </ol>
+
+    <form id="booking-form" novalidate>
+
+      <!-- Step 1: Patient Information -->
+      <section class="panel is-active" data-panel="0">
+        <label for="f-name" data-i18n="field.fullName">Full name<span class="required-mark">*</span></label>
+        <input type="text" id="f-name" name="customerName" autocomplete="name" required>
+        <p class="field-error" id="err-name" hidden></p>
+
+        <label for="f-phone" data-i18n="field.phone">Cambodian phone number<span class="required-mark">*</span></label>
+        <input type="tel" id="f-phone" name="phone" autocomplete="tel" placeholder="088 696 8838" required>
+        <p class="field-error" id="err-phone" hidden></p>
+
+        <div class="button-row">
+          <button type="button" class="next-btn" data-i18n="btn.next">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Select Service -->
+      <section class="panel" data-panel="1">
+        <label for="f-service" data-i18n="field.service">Service requested<span class="required-mark">*</span></label>
+        <select id="f-service" name="service" required></select>
+        <p class="field-error" id="err-service" hidden></p>
+
+        <div class="button-row">
+          <button type="button" class="back-btn secondary" data-i18n="btn.back">Back</button>
+          <button type="button" class="next-btn" data-i18n="btn.next">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Date & Time (combined) -->
+      <section class="panel" data-panel="2">
+        <label data-i18n="field.dateTimeHeading">Select your preferred appointment date and time</label>
+        <div class="datetime-grid">
+          <div class="datetime-col">
+            <label for="f-date" data-i18n="field.preferredDate">Preferred appointment date<span class="required-mark">*</span></label>
+            <input type="date" id="f-date" name="date" required>
+            <p class="field-error" id="err-date" hidden></p>
+          </div>
+          <div class="datetime-col">
+            <label data-i18n="field.preferredTime">Preferred appointment time<span class="required-mark">*</span></label>
+            <div class="time-slots" id="time-slots"></div>
+            <input type="hidden" id="f-time" name="time" required>
+            <p class="field-error" id="err-time" hidden></p>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" class="back-btn secondary" data-i18n="btn.back">Back</button>
+          <button type="button" class="next-btn" data-i18n="btn.next">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 4: Optional Concern / Message -->
+      <section class="panel" data-panel="3">
+        <label for="f-message"><span data-i18n="field.message">Message or concern</span> <span class="optional-hint" data-i18n="field.optional">(optional)</span></label>
+        <textarea id="f-message" name="message"></textarea>
+
+        <div class="button-row">
+          <button type="button" class="back-btn secondary" data-i18n="btn.back">Back</button>
+          <button type="button" class="next-btn" data-i18n="btn.continueReview">Continue to review</button>
+        </div>
+      </section>
+
+      <!-- Step 5: Review -->
+      <section class="panel" data-panel="4">
+        <p class="muted" data-i18n="review.intro">Please check your details, then confirm your booking.</p>
+        <dl class="review-list">
+          <dt data-i18n="review.name">Full name</dt><dd id="rv-name"></dd>
+          <dt data-i18n="review.phone">Phone number</dt><dd id="rv-phone"></dd>
+          <dt data-i18n="review.service">Service</dt><dd id="rv-service"></dd>
+          <dt data-i18n="review.date">Date</dt><dd id="rv-date"></dd>
+          <dt data-i18n="review.time">Time</dt><dd id="rv-time"></dd>
+          <dt data-i18n="review.message">Message / concern</dt><dd id="rv-message"></dd>
+        </dl>
+
+        <label class="check">
+          <input type="checkbox" id="f-consent" required>
+          <span><span data-i18n="field.consent">I agree that Hearing Solution Cambodia may use my contact and appointment information to respond to and manage this request.</span><span class="required-mark">*</span></span>
+        </label>
+        <p class="field-error" id="err-consent" hidden></p>
+        <p class="error" id="err-duplicate" hidden data-i18n="error.duplicate">It looks like you already submitted this request. Our team will be in touch shortly.</p>
+
+        <div class="button-row">
+          <button type="button" class="back-btn secondary" data-i18n="btn.changeDetails">Edit details</button>
+          <button type="submit" id="submit-btn" data-i18n="btn.submitBooking">Confirm Booking</button>
+        </div>
+      </section>
+
+    </form>
+
+    <!-- Step 6: Success -->
+    <section class="success" id="panel-success" hidden>
+      <div class="success-icon">✓</div>
+      <h1 data-i18n="success.title">Appointment Request Submitted</h1>
+      <p data-i18n="success.intro">Thank you. Your appointment request has been submitted successfully. Our team will contact you to confirm the appointment details.</p>
+      <p class="muted" data-i18n="success.reference">Booking Reference</p>
+      <p class="reference" id="s-reference"></p>
+      <dl class="review-list">
+        <dt data-i18n="success.name">Customer Name</dt><dd id="s-name"></dd>
+        <dt data-i18n="success.phone">Phone</dt><dd id="s-phone"></dd>
+        <dt data-i18n="success.service">Service</dt><dd id="s-service"></dd>
+        <dt data-i18n="success.date">Date</dt><dd id="s-date"></dd>
+        <dt data-i18n="success.time">Time</dt><dd id="s-time"></dd>
+        <dt data-i18n="success.status">Status</dt><dd id="s-status"></dd>
+      </dl>
+      <p class="muted" data-i18n="success.followUp">Our team will review your request and assign an appropriate specialist before confirming your appointment.</p>
+      <div class="button-row" style="justify-content:center">
+        <a class="secondary" href="../" style="display:inline-block;text-decoration:none;padding:13px 18px;border-radius:8px" data-i18n="btn.backWebsite">← Back to Website</a>
+        <a href="../admin/" style="display:inline-block;text-decoration:none;padding:13px 18px;border-radius:8px;color:#fff" data-i18n="btn.viewDashboard">View Admin Dashboard</a>
+        <button type="button" id="book-another" class="secondary" data-i18n="btn.bookAnother">Book Another Appointment</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span data-i18n="footer.needHelp">Need help? Call</span> <a href="tel:+855886968838">088 696 8838</a> ·
+    <a href="../"><span data-i18n="btn.backWebsite">← Back to Website</span></a>
+  </footer>
+
+</div>
+
+<script src="../js/demo-data.js"></script>
+<script src="../js/demo-i18n.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/supabase-notes.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var supabaseClient = window.supabase.createClient(window.C022_SUPABASE_URL, window.C022_SUPABASE_ANON_KEY);
+  var isSubmitting = false;
+  var hasSubmittedOnce = false;
+
+  var TOTAL_STEPS = 5; // 0..4 -> Patient, Service, Date&Time, Message, Review
+  var current = 0;
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var stepEls = Array.prototype.slice.call(document.querySelectorAll("#steps .step"));
+  var form = document.getElementById("booking-form");
+  var successPanel = document.getElementById("panel-success");
+
+  var TIME_SLOTS = ["08:30","09:00","09:30","10:00","10:30","11:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30"];
+
+  /* ---------- language ---------- */
+  function applyLang(lang) {
+    document.documentElement.setAttribute("lang", lang === "kh" ? "km" : "en");
+    document.documentElement.setAttribute("data-lang", lang);
+    document.body.classList.toggle("lang-kh", lang === "kh");
+    document.body.classList.toggle("lang-en", lang !== "kh");
+    document.querySelectorAll("[data-lang-btn]").forEach(function (btn) {
+      btn.classList.toggle("is-active", btn.getAttribute("data-lang-btn") === lang);
+    });
+    var dict = window.C022_DEMO_I18N[lang] || window.C022_DEMO_I18N.en;
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n");
+      if (dict[key] !== undefined) el.textContent = dict[key];
+    });
+    populateService(lang);
+    updateReview(lang);
+  }
+
+  document.querySelectorAll("[data-lang-btn]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var lang = btn.getAttribute("data-lang-btn");
+      window.C022Demo.setLang(lang);
+      applyLang(lang);
+    });
+  });
+
+  window.addEventListener("storage", function (e) {
+    if (e.key === window.C022Demo.LANG_KEY) applyLang(window.C022Demo.getLang());
+  });
+
+  /* ---------- service options ---------- */
+  function populateService(lang) {
+    var dict = window.C022_DEMO_I18N[lang] || window.C022_DEMO_I18N.en;
+    var sel = document.getElementById("f-service");
+    var prev = sel.value;
+    sel.innerHTML = "";
+    var placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = dict["field.selectService"];
+    placeholder.disabled = true;
+    placeholder.selected = !prev;
+    sel.appendChild(placeholder);
+    window.C022_DEMO_SERVICES.forEach(function (key) {
+      var opt = document.createElement("option");
+      opt.value = dict[key];
+      opt.textContent = dict[key];
+      opt.dataset.key = key;
+      sel.appendChild(opt);
+    });
+    if (prev) {
+      var match = window.C022_DEMO_SERVICES.map(function (k) { return dict[k]; }).indexOf(prev) >= 0;
+      if (match) sel.value = prev;
+    }
+  }
+
+  /* ---------- time slots ---------- */
+  function renderTimeSlots() {
+    var wrap = document.getElementById("time-slots");
+    var hidden = document.getElementById("f-time");
+    wrap.innerHTML = "";
+    TIME_SLOTS.forEach(function (t) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "time-slot" + (hidden.value === t ? " is-selected" : "");
+      btn.textContent = t;
+      btn.addEventListener("click", function () {
+        hidden.value = t;
+        wrap.querySelectorAll(".time-slot").forEach(function (el) { el.classList.remove("is-selected"); });
+        btn.classList.add("is-selected");
+        showError("err-time", "");
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  /* ---------- step navigation ---------- */
+  function showStep(index) {
+    current = index;
+    panels.forEach(function (p) {
+      p.classList.toggle("is-active", Number(p.dataset.panel) === index);
+    });
+    stepEls.forEach(function (el) {
+      var i = Number(el.dataset.stepIndex);
+      el.classList.toggle("step-current", i === index);
+      el.classList.toggle("step-done", i < index);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showError(id, msg) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.hidden = !msg;
+  }
+
+  function validateStep(index) {
+    var dict = window.C022_DEMO_I18N[window.C022Demo.getLang()] || window.C022_DEMO_I18N.en;
+    var ok = true;
+    if (index === 0) {
+      var name = document.getElementById("f-name").value.trim();
+      var phone = document.getElementById("f-phone").value.trim();
+      showError("err-name", name ? "" : dict["error.fullName"]);
+      var phoneOk = /^[0-9+()\s-]{8,15}$/.test(phone);
+      showError("err-phone", phoneOk ? "" : dict["error.phone"]);
+      ok = !!name && phoneOk;
+    } else if (index === 1) {
+      var service = document.getElementById("f-service").value;
+      showError("err-service", service ? "" : dict["error.service"]);
+      ok = !!service;
+    } else if (index === 2) {
+      var date = document.getElementById("f-date").value;
+      var todayStr = new Date().toISOString().slice(0, 10);
+      var dateOk = !!date && date >= todayStr;
+      showError("err-date", !date ? dict["error.date"] : (!dateOk ? dict["error.dateAfterToday"] : ""));
+      var time = document.getElementById("f-time").value;
+      showError("err-time", time ? "" : dict["error.time"]);
+      ok = dateOk && !!time;
+    }
+    return ok;
+  }
+
+  document.querySelectorAll(".next-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (!validateStep(current)) return;
+      if (current === TOTAL_STEPS - 2) updateReview(window.C022Demo.getLang());
+      if (current < TOTAL_STEPS - 1) showStep(current + 1);
+    });
+  });
+
+  document.querySelectorAll(".back-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (current > 0) showStep(current - 1);
+    });
+  });
+
+  function updateReview(lang) {
+    var dict = window.C022_DEMO_I18N[lang] || window.C022_DEMO_I18N.en;
+    document.getElementById("rv-name").textContent = document.getElementById("f-name").value.trim();
+    document.getElementById("rv-phone").textContent = document.getElementById("f-phone").value.trim();
+    document.getElementById("rv-service").textContent = document.getElementById("f-service").value || "—";
+    document.getElementById("rv-date").textContent = document.getElementById("f-date").value || "—";
+    document.getElementById("rv-time").textContent = document.getElementById("f-time").value || "—";
+    document.getElementById("rv-message").textContent = document.getElementById("f-message").value.trim() || dict["review.none"];
+  }
+
+  /* ---------- submit ---------- */
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (isSubmitting || hasSubmittedOnce) return; // duplicate-click / duplicate-submit guard
+
+    var lang = window.C022Demo.getLang();
+    var dict = window.C022_DEMO_I18N[lang] || window.C022_DEMO_I18N.en;
+
+    var consent = document.getElementById("f-consent").checked;
+    showError("err-consent", consent ? "" : dict["error.consent"]);
+    if (!consent) return;
+
+    var fields = {
+      customerName: document.getElementById("f-name").value.trim(),
+      phone: document.getElementById("f-phone").value.trim(),
+      service: document.getElementById("f-service").value,
+      date: document.getElementById("f-date").value,
+      time: document.getElementById("f-time").value,
+      message: document.getElementById("f-message").value.trim()
+    };
+
+    document.getElementById("err-duplicate").hidden = true;
+
+    var submitBtn = document.getElementById("submit-btn");
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = dict["btn.submitting"];
+
+    // Only INSERT — the public/anon key can only insert new bookings
+    // (enforced by RLS). status/created_at/updated_at are never sent;
+    // the database sets those itself (default + trigger), regardless
+    // of anything a client attempts to pass.
+    var newId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : null;
+    var payload = {
+      customer_name: fields.customerName,
+      phone: fields.phone,
+      booking_date: fields.date,
+      booking_time: fields.time,
+      note: window.C022Notes.encode(fields.service, fields.message, "")
+    };
+    if (newId) payload.id = newId;
+
+    supabaseClient.from("bookings").insert(payload).then(function (res) {
+      isSubmitting = false;
+      if (res.error) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = dict["btn.submitBooking"];
+        document.getElementById("err-duplicate").hidden = false;
+        document.getElementById("err-duplicate").textContent = dict["error.submitFailed"] || "Something went wrong. Please try again.";
+        return;
+      }
+      hasSubmittedOnce = true;
+      var record = {
+        reference: newId ? ("HS-" + newId.replace(/-/g, "").slice(0, 8).toUpperCase()) : "—",
+        customerName: fields.customerName,
+        phone: fields.phone,
+        service: fields.service,
+        date: fields.date,
+        time: fields.time
+      };
+      renderSuccess(record, lang);
+      form.hidden = true;
+      document.getElementById("steps").hidden = true;
+      successPanel.hidden = false;
+    }).catch(function () {
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = dict["btn.submitBooking"];
+      document.getElementById("err-duplicate").hidden = false;
+      document.getElementById("err-duplicate").textContent = dict["error.submitFailed"] || "Something went wrong. Please try again.";
+    });
+  });
+
+  function renderSuccess(record, lang) {
+    var dict = window.C022_DEMO_I18N[lang] || window.C022_DEMO_I18N.en;
+    document.getElementById("s-reference").textContent = record.reference;
+    document.getElementById("s-name").textContent = record.customerName;
+    document.getElementById("s-phone").textContent = record.phone;
+    document.getElementById("s-service").textContent = record.service;
+    document.getElementById("s-date").textContent = record.date;
+    document.getElementById("s-time").textContent = record.time;
+    document.getElementById("s-status").textContent = dict["success.statusValue"];
+  }
+
+  document.getElementById("book-another").addEventListener("click", function () {
+    hasSubmittedOnce = false;
+    var submitBtn = document.getElementById("submit-btn");
+    submitBtn.disabled = false;
+    form.reset();
+    document.getElementById("f-time").value = "";
+    renderTimeSlots();
+    form.hidden = false;
+    document.getElementById("steps").hidden = false;
+    successPanel.hidden = true;
+    showStep(0);
+    applyLang(window.C022Demo.getLang());
+  });
+
+  /* ---------- init ---------- */
+  document.getElementById("f-date").min = new Date().toISOString().slice(0, 10);
+  renderTimeSlots();
+  applyLang(window.C022Demo.getLang());
+  showStep(0);
+})();
+</script>
+</body>
+</html>

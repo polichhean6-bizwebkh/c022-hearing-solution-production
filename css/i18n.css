@@ -1,0 +1,346 @@
+/* C022 Hearing Solution Cambodia — bilingual (EN/KH) language-switch + Khmer typography */
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 14px;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  gap: 2px;
+}
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, .78);
+  font: 700 12px/1 Manrope, sans-serif;
+  letter-spacing: .02em;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+  white-space: nowrap;
+}
+.lang-btn:hover { color: #fff; }
+.lang-btn.is-active { background: #fff; color: var(--blue, #1746c8); }
+html[data-lang="kh"] .lang-btn {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  line-height: 1.4;
+}
+
+@media (max-width: 680px) {
+  .contact-inner { flex-wrap: wrap; row-gap: 6px; }
+  .lang-switch { margin-left: 0; }
+}
+
+/* Khmer top-bar address is longer than the English one ("ផ្ទះលេខ 14E, ផ្លូវលេខ
+   6B, សង្កាត់ដង្កោ, ខណ្ឌដង្កោ, រាជធានីភ្នំពេញ") — keep the English behaviour
+   (single line, white-space: nowrap) untouched, but let the Khmer address wrap
+   naturally on narrow screens instead of forcing overflow. */
+html[data-lang="kh"] .location-map-link {
+  white-space: normal;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+@media (max-width: 680px) {
+  html[data-lang="kh"] .location-map-link {
+    white-space: normal;
+  }
+}
+
+/* ==========================================================================
+   Khmer script rendering (EN/KH bilingual typography)
+   Scope: html[data-lang="kh"] / html[lang="km"] / body.lang-kh only.
+   Fixes font fallback, letter-spacing, line-height and weight issues that
+   were causing malformed Khmer glyphs — no content or layout changes.
+   ========================================================================== */
+
+/* 1) One reliable Khmer font family, cascaded from the document root so every
+   element inherits it unless a more specific rule below overrides it. */
+html[data-lang="kh"],
+html[lang="km"],
+body.lang-kh {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+}
+html[data-lang="kh"] body,
+html[data-lang="kh"] input,
+html[data-lang="kh"] textarea,
+html[data-lang="kh"] select,
+html[data-lang="kh"] button {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+}
+
+/* 2) Remove Latin letter-spacing/tracking and uppercase transforms from every
+   Khmer element. Tight or negative tracking breaks Khmer subscript/diacritic
+   (coeng) positioning and produces squeezed or overlapping marks; uppercase
+   transforms are meaningless for Khmer script but some fonts still trigger
+   unwanted glyph substitution when text-transform is active. */
+html[data-lang="kh"] * {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* 3) Headings: several sections hard-code `font: ... Manrope` (a shorthand
+   that also forces font-family + line-height in one declaration), which both
+   drops Khmer glyphs to an inconsistent fallback and squashes multi-line
+   Khmer text. Re-assert family + comfortable line-height at Khmer-only
+   specificity so English stays untouched. */
+html[data-lang="kh"] h1,
+html[data-lang="kh"] h2,
+html[data-lang="kh"] h3,
+html[data-lang="kh"] h4 {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  line-height: 1.45;
+}
+html[data-lang="kh"] p,
+html[data-lang="kh"] li,
+html[data-lang="kh"] .lead,
+html[data-lang="kh"] .eyebrow {
+  line-height: 1.75;
+}
+
+/* 4) FAQ questions (.accordion button) hard-code `font:700 15px Manrope`
+   with no line-height, and the plus icon and multi-line question text were
+   not given breathing room. Second pass: lighter weight (400-500, matching
+   Khmer body-text weight, not a heavy Latin heading weight), taller
+   line-height (~1.8) and an explicit fixed-width icon column so the question
+   text never fights the "+" for space. Answer panels get the same treatment. */
+html[data-lang="kh"] .accordion button {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.8;
+  letter-spacing: normal;
+  text-transform: none;
+  align-items: flex-start;
+  gap: 16px;
+}
+html[data-lang="kh"] .accordion button > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+html[data-lang="kh"] .accordion button span:last-child {
+  flex: 0 0 20px;
+  width: 20px;
+  line-height: 1.4;
+  text-align: center;
+}
+html[data-lang="kh"] .accordion div {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+}
+html[data-lang="kh"] .accordion div p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+
+/* 5) About-section image overlay heading (.slogan) hard-codes
+   `font:700 30px/1.25 Manrope` — restore Khmer family, a slightly lighter
+   weight and taller line-height while keeping position/colour untouched. */
+html[data-lang="kh"] .slogan {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* 5b) "Blue card" section: the partnership-category pills sitting directly on
+   the dark-blue gradient background (.partnership) hard-code
+   `font:700 13px/1.35 Manrope` — the exact same forced-Latin-font + tight
+   weight problem as the FAQ, just on a different background. Give them a
+   proper Khmer font, lighter weight, taller line-height and more breathing
+   room, and let the pill grow instead of clipping. */
+html[data-lang="kh"] .partnership-categories li {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+  letter-spacing: normal;
+  padding: 14px 16px;
+  height: auto;
+  min-height: 0;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+html[data-lang="kh"] .partnership-panel h3 {
+  line-height: 1.5;
+}
+html[data-lang="kh"] .partnership-panel p,
+html[data-lang="kh"] .partnership p {
+  line-height: 1.75;
+}
+html[data-lang="kh"] .partnership .btn {
+  line-height: 1.5;
+}
+
+/* 5c) Product/brand filter pills also hard-code a Manrope shorthand with
+   `line-height: 1` (the tightest possible value) — fine for a short English
+   label, but it crushes Khmer glyphs and their diacritics. */
+html[data-lang="kh"] .product-filter {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  font-weight: 600;
+  line-height: 1.5;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* 6) Service/feature labels that sit beside an icon (.trust-grid article)
+   hard-code `font:700 13px Manrope` with no line-height, causing malformed
+   bold Khmer glyphs and cramped wrapping next to the icon. */
+html[data-lang="kh"] .trust-grid article {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  font-weight: 600;
+  line-height: 1.5;
+  align-items: center;
+}
+
+/* 7) Smaller labelled elements that use a Manrope `font:` shorthand
+   elsewhere in the site (brand labels, tag chips, gallery card labels). */
+html[data-lang="kh"] .style-card span,
+html[data-lang="kh"] .product-card .product-brand-label,
+html[data-lang="kh"] .brand-transition-arrow span {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+  line-height: 1.5;
+}
+
+/* 8) Buttons: correct line-height/weight and enough vertical padding so
+   Khmer glyphs (which sit taller than Latin) are never clipped. */
+html[data-lang="kh"] .btn,
+html[data-lang="kh"] .nav-cta,
+html[data-lang="kh"] button {
+  font-weight: 600;
+  line-height: 1.45;
+}
+html[data-lang="kh"] .btn {
+  min-height: 44px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+html[data-lang="kh"] .nav-cta {
+  min-height: 40px;
+  line-height: 1.5;
+}
+
+/* 9) Tag chips / pills: allow natural height instead of the fixed English
+   pixel height, and give Khmer glyphs enough line-height so nothing clips. */
+html[data-lang="kh"] .product-tags li,
+html[data-lang="kh"] .corporate-tag {
+  line-height: 1.5;
+  height: auto;
+  min-height: 26px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Khmer nav links run longer than English; allow nav to wrap gracefully
+   instead of clipping. */
+html[data-lang="kh"] .site-header nav {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+html[data-lang="kh"] nav a {
+  line-height: 1.5;
+}
+html[data-lang="kh"] .product-card h4,
+html[data-lang="kh"] .profile-card h3 {
+  -webkit-line-clamp: 3;
+}
+
+/* ==========================================================================
+   FINAL KHMER OVERRIDE LAYER (must stay at the end of this file)
+   Belt-and-suspenders pass: some component rules elsewhere in the CSS use a
+   `font: <weight> <size>[/<line-height>] Manrope|Inter` shorthand, which sets
+   font-family/weight/line-height in a single declaration. Individual
+   longhand properties normally beat a shorthand at equal specificity when
+   they come later in the cascade, but these !important, body.lang-kh-scoped
+   rules remove any remaining doubt and guarantee Noto Sans Khmer, normal
+   letter-spacing and no forced uppercase win everywhere Khmer is active —
+   without altering any Khmer copy or the FAQ/partnership markup or layout.
+   ========================================================================== */
+body.lang-kh,
+html[lang="km"] {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif;
+}
+body.lang-kh h1,
+body.lang-kh h2,
+body.lang-kh h3,
+body.lang-kh h4,
+body.lang-kh h5,
+body.lang-kh h6,
+body.lang-kh p,
+body.lang-kh span,
+body.lang-kh a,
+body.lang-kh button,
+body.lang-kh li,
+body.lang-kh label,
+body.lang-kh input,
+body.lang-kh textarea,
+body.lang-kh select {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* FAQ: heading, eyebrow, questions and answers. */
+body.lang-kh .faq h2,
+body.lang-kh .faq .eyebrow,
+body.lang-kh .faq > *,
+body.lang-kh .accordion button,
+body.lang-kh .accordion button span,
+body.lang-kh .accordion article > div,
+body.lang-kh .accordion article > div p {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+body.lang-kh .faq h2 {
+  font-weight: 700;
+  line-height: 1.45;
+}
+body.lang-kh .faq .eyebrow {
+  font-weight: 600;
+  line-height: 1.5;
+}
+body.lang-kh .faq p {
+  line-height: 1.75;
+}
+body.lang-kh .accordion button {
+  line-height: 1.75;
+  font-weight: 500;
+  white-space: normal;
+}
+body.lang-kh .accordion button span:first-child,
+body.lang-kh .accordion button > span[data-i18n^="faq.q"] {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.75;
+}
+/* The "+" toggle glyph is not Khmer text — keep it on its own compact box so
+   the Khmer font-family swap above never pushes it out of alignment. */
+body.lang-kh .accordion button span:last-child {
+  font-family: inherit;
+  flex: 0 0 auto;
+  line-height: 1.4;
+}
+
+/* Blue "partnership" cards: same explicit override, icons excluded. */
+body.lang-kh .partnership,
+body.lang-kh .partnership *,
+body.lang-kh .partnership-categories,
+body.lang-kh .partnership-categories li {
+  font-family: "Noto Sans Khmer", "Battambang", sans-serif !important;
+  letter-spacing: normal !important;
+}
+body.lang-kh .partnership-categories li {
+  line-height: 1.65;
+}
+body.lang-kh .partnership svg,
+body.lang-kh .partnership i,
+body.lang-kh .partnership [data-lucide] {
+  font-family: initial !important;
+}

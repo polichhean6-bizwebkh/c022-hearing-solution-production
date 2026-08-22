@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard | Hearing Solution Cambodia</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../assets/logo/hearing-solution-logo-web.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/booking.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body class="lang-en">
+
+<!-- Login gate: shown until an authenticated admin session exists -->
+<div class="modal-backdrop is-open" id="login-screen" style="position:fixed;z-index:9999">
+  <div class="modal-panel" style="max-width:380px">
+    <p class="eyebrow">Hearing Solution Cambodia</p>
+    <h1 style="font-size:22px;margin-top:4px">Admin Sign In</h1>
+    <form id="login-form" novalidate>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" autocomplete="username" required>
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" autocomplete="current-password" required>
+      <p class="error" id="login-error" hidden></p>
+      <div class="button-row">
+        <button type="submit" id="login-submit">Sign In</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="app-shell" id="app-shell" style="display:none">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo/hearing-solution-logo-web.webp" alt="Hearing Solution Cambodia">
+      <span>Hearing Solution</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button type="button" class="sidebar-link is-active" data-view-link="dashboard"><span class="ico">&#9635;</span><span data-i18n="nav.dashboard">Dashboard</span></button>
+      <button type="button" class="sidebar-link" data-view-link="calendar"><span class="ico">&#128197;</span><span data-i18n="nav.calendar">Calendar</span></button>
+      <button type="button" class="sidebar-link" data-view-link="bookings"><span class="ico">&#128203;</span><span data-i18n="nav.bookings">Bookings</span></button>
+      <button type="button" class="sidebar-link" data-view-link="customers"><span class="ico">&#128100;</span><span data-i18n="nav.customers">Customers</span></button>
+      <button type="button" class="sidebar-link" data-view-link="reports"><span class="ico">&#128202;</span><span data-i18n="nav.reports">Reports</span></button>
+      <button type="button" class="sidebar-link" data-view-link="settings"><span class="ico">&#9881;</span><span data-i18n="nav.settings">Settings</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <a class="sidebar-link" href="../"><span class="ico">&#8617;</span><span data-i18n="dash.viewWebsite">View Website</span></a>
+      <a class="sidebar-link" href="../booking/"><span class="ico">&#43;</span><span data-i18n="dash.viewBooking">Booking Page</span></a>
+      <button type="button" class="sidebar-link" id="logout-btn"><span class="ico">&#9099;</span><span>Log Out</span></button>
+      <div class="sidebar-lang" role="group" aria-label="Language switch">
+        <button type="button" class="is-active" data-lang-btn="en">EN</button>
+        <button type="button" data-lang-btn="kh">ខ្មែរ</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <div class="topbar-mobile">
+      <button type="button" class="menu-btn" id="menu-toggle" aria-label="Open menu">&#9776;</button>
+      <strong data-i18n="dash.title">Booking Dashboard</strong>
+      <span style="width:38px"></span>
+    </div>
+
+    <main class="main-content">
+
+      <!-- ================= DASHBOARD ================= -->
+      <section class="view is-active" id="view-dashboard">
+        <div class="view-header">
+          <h1 data-i18n="ov.title">Dashboard Overview</h1>
+          <p class="muted" data-i18n="ov.subtitle">A snapshot of today's activity across the clinic.</p>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><small data-i18n="ov.totalBookings">Total Bookings</small><strong id="kpi-total">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.today">Today's Bookings</small><strong id="kpi-today">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.pending">Pending</small><strong id="kpi-pending">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.confirmed">Confirmed</small><strong id="kpi-confirmed">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.completed">Completed</small><strong id="kpi-completed">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.cancelled">Cancelled</small><strong id="kpi-cancelled">0</strong></div>
+          <div class="kpi-card"><small data-i18n="ov.totalPatients">Total Patients</small><strong id="kpi-patients">0</strong></div>
+        </div>
+        <div class="two-col">
+          <div class="panel-card">
+            <h2 data-i18n="ov.upcoming">Upcoming Appointments</h2>
+            <ul class="mini-list" id="upcoming-list"></ul>
+          </div>
+          <div class="panel-card">
+            <h2 data-i18n="ov.recentActivity">Recent Booking Activity</h2>
+            <ul class="mini-list" id="activity-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CALENDAR ================= -->
+      <section class="view" id="view-calendar">
+        <div class="view-header">
+          <h1 data-i18n="cal.title">Calendar</h1>
+          <p class="muted" data-i18n="cal.subtitle">Full month view of all scheduled appointments.</p>
+        </div>
+        <div class="calendar-toolbar">
+          <h2 id="calendar-month-label"></h2>
+          <div class="calendar-nav">
+            <button type="button" id="cal-prev" data-i18n="cal.prev">Previous</button>
+            <button type="button" id="cal-today" data-i18n="cal.today">Today</button>
+            <button type="button" id="cal-next" data-i18n="cal.next">Next</button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendar-dow"></div>
+        <div class="calendar-grid" id="calendar-grid" style="margin-top:6px"></div>
+      </section>
+
+      <!-- ================= BOOKINGS ================= -->
+      <section class="view" id="view-bookings">
+        <div class="view-header">
+          <h1 data-i18n="dash.title">Booking Dashboard</h1>
+          <p class="muted" data-i18n="dash.subtitle">Manage appointment requests submitted through the website.</p>
+        </div>
+        <div class="filters">
+          <div class="filter-field">
+            <label data-i18n="dash.searchPlaceholder">Search name, phone or reference…</label>
+            <input type="search" id="search" data-i18n-placeholder="dash.searchPlaceholder" placeholder="Search name, phone or reference…">
+          </div>
+          <div class="filter-field">
+            <label data-i18n="dash.colStatus">Status</label>
+            <select id="status-filter"></select>
+          </div>
+          <button type="button" class="reset-link" id="clear-filters" data-i18n="dash.close">Clear</button>
+        </div>
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="dash.colReference">Reference</th>
+                <th data-i18n="dash.colCustomer">Customer</th>
+                <th data-i18n="dash.colPhone">Phone</th>
+                <th data-i18n="dash.colService">Service</th>
+                <th data-i18n="dash.colDate">Date &amp; Time</th>
+                <th data-i18n="dash.colSource">Source</th>
+                <th data-i18n="dash.colStatus">Status</th>
+                <th data-i18n="dash.colActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="booking-rows"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="empty-state" hidden>
+          <strong data-i18n="dash.emptyAll">No bookings yet. Submit a test booking from the Booking Page to see it here.</strong>
+        </div>
+      </section>
+
+      <!-- ================= CUSTOMERS ================= -->
+      <section class="view" id="view-customers">
+        <div class="view-header">
+          <h1 data-i18n="cust.title">Customers</h1>
+          <p class="muted" data-i18n="cust.subtitle">Every customer derived automatically from booking history.</p>
+        </div>
+        <div class="search-bar">
+          <input type="search" id="customer-search" data-i18n-placeholder="cust.searchPlaceholder" placeholder="Search customer name or phone…">
+        </div>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="cust.name">Customer Name</th>
+                <th data-i18n="cust.phone">Phone</th>
+                <th data-i18n="cust.totalVisits">Total Visits</th>
+                <th data-i18n="cust.lastVisit">Last Visit</th>
+                <th data-i18n="cust.mostUsedService">Most Used Service</th>
+                <th data-i18n="cust.latestStatus">Latest Booking Status</th>
+              </tr>
+            </thead>
+            <tbody id="customer-rows"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="customer-empty" hidden>
+          <strong data-i18n="cust.noCustomers">No customers yet.</strong>
+        </div>
+      </section>
+
+      <!-- ================= REPORTS ================= -->
+      <section class="view" id="view-reports">
+        <div class="view-header">
+          <h1 data-i18n="rep.title">Reports</h1>
+          <p class="muted" data-i18n="rep.subtitle">Clinic performance for the selected period.</p>
+        </div>
+
+        <div class="period-bar">
+          <button type="button" class="period-btn" data-period="thisMonth" data-i18n="rep.thisMonth">This Month</button>
+          <button type="button" class="period-btn" data-period="last3" data-i18n="rep.last3">Last 3 Months</button>
+          <button type="button" class="period-btn is-active" data-period="last6" data-i18n="rep.last6">Last 6 Months</button>
+          <button type="button" class="period-btn" data-period="custom" data-i18n="rep.custom">Custom Range</button>
+          <div class="period-custom" id="period-custom" hidden>
+            <input type="date" id="period-from">
+            <input type="date" id="period-to">
+            <button type="button" id="period-apply" data-i18n="rep.apply">Apply</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><small data-i18n="rep.totalBookings">Total Bookings</small><strong id="rep-total">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.totalPatients">Total Patients</small><strong id="rep-patients">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.totalVisits">Total Visits</small><strong id="rep-visits">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.completedVisits">Completed Visits</small><strong id="rep-completed">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.cancelledBookings">Cancelled Bookings</small><strong id="rep-cancelled">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.noShow">No-show</small><strong id="rep-noshow">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.newPatients">New Patients</small><strong id="rep-new">0</strong></div>
+          <div class="kpi-card"><small data-i18n="rep.returningPatients">Returning Patients</small><strong id="rep-returning">0</strong></div>
+        </div>
+
+        <div class="reports-grid">
+          <div class="chart-card">
+            <h2 data-i18n="rep.trendTitle">Bookings by Month</h2>
+            <p class="muted" data-i18n="rep.trendSubtitle">Last 6 months</p>
+            <div class="chart-canvas-wrap"><canvas id="chart-trend"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h2 data-i18n="rep.visitStatusTitle">Visit Status Summary</h2>
+            <p class="muted">&nbsp;</p>
+            <div class="chart-canvas-wrap"><canvas id="chart-visitstatus"></canvas></div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h2 data-i18n="rep.serviceTitle">Bookings by Service Type</h2>
+          <p class="muted">&nbsp;</p>
+          <div class="reports-grid">
+            <div class="chart-canvas-wrap is-small"><canvas id="chart-service"></canvas></div>
+            <div class="table" style="box-shadow:none;border:1px solid var(--line)">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="rep.serviceCol.service">Service</th>
+                    <th data-i18n="rep.serviceCol.bookings">Bookings</th>
+                    <th data-i18n="rep.serviceCol.patients">Patients</th>
+                    <th data-i18n="rep.serviceCol.completed">Completed Visits</th>
+                    <th data-i18n="rep.serviceCol.pct">% of Total</th>
+                  </tr>
+                </thead>
+                <tbody id="service-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h2 data-i18n="rep.patientTitle">Patient Breakdown</h2>
+          <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px">
+            <div class="kpi-card"><small data-i18n="rep.uniquePatients">Unique Patients</small><strong id="rep-unique">0</strong></div>
+            <div class="kpi-card"><small data-i18n="rep.newPatients">New Patients</small><strong id="rep-new2">0</strong></div>
+            <div class="kpi-card"><small data-i18n="rep.returningPatients">Returning Patients</small><strong id="rep-returning2">0</strong></div>
+            <div class="kpi-card"><small data-i18n="rep.avgVisits">Average Visits per Patient</small><strong id="rep-avg">0</strong></div>
+          </div>
+          <p class="eyebrow" style="margin-top:10px" data-i18n="rep.topRepeat">Top Repeat Patients</p>
+          <ul class="mini-list" id="top-repeat-list"></ul>
+        </div>
+      </section>
+
+      <!-- ================= SETTINGS ================= -->
+      <section class="view" id="view-settings">
+        <div class="view-header">
+          <h1 data-i18n="settings.title">Settings</h1>
+          <p class="muted" data-i18n="settings.subtitle">Preferences for this device.</p>
+        </div>
+        <div class="panel-card">
+          <h2 data-i18n="settings.language">Language</h2>
+          <div class="lang-switch" role="group" aria-label="Language switch">
+            <button type="button" class="lang-btn is-active" data-lang-btn="en">EN</button>
+            <button type="button" class="lang-btn" data-lang-btn="kh">ខ្មែរ</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <h2 data-i18n="settings.dataTitle">Booking data</h2>
+          <p class="muted" data-i18n="settings.dataDesc">Booking data is stored securely in the Hearing Solution Cambodia database.</p>
+        </div>
+        <div class="panel-card">
+          <h2 data-i18n="settings.about">About this dashboard</h2>
+          <p class="muted" data-i18n="settings.aboutDesc">Admin dashboard for the Hearing Solution Cambodia booking system.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Booking detail / edit modal -->
+<div class="modal-backdrop" id="detail-modal">
+  <div class="modal-panel">
+    <button type="button" class="modal-close" id="detail-close" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="dash.detailsTitle">Booking Details</p>
+    <h1 id="d-reference" style="font-size:22px;margin-top:4px"></h1>
+    <div class="detail-grid">
+      <div>
+        <dt data-i18n="dash.colCustomer">Customer</dt><dd id="d-name"></dd>
+        <dt data-i18n="dash.colPhone">Phone</dt><dd id="d-phone"></dd>
+        <dt data-i18n="dash.colService">Service</dt><dd id="d-service"></dd>
+        <dt data-i18n="dash.colDate">Date &amp; Time</dt><dd id="d-datetime"></dd>
+      </div>
+      <div>
+        <dt data-i18n="dash.colSource">Source</dt><dd id="d-source"></dd>
+        <dt data-i18n="review.message">Message / concern</dt><dd id="d-message"></dd>
+        <dt data-i18n="dash.colCreated">Created</dt><dd id="d-created"></dd>
+      </div>
+    </div>
+
+    <label for="d-status" data-i18n="dash.changeStatus">Change status</label>
+    <select id="d-status"></select>
+
+    <label for="d-note" data-i18n="dash.adminNote">Admin note</label>
+    <textarea id="d-note" data-i18n-placeholder="dash.adminNotePlaceholder" placeholder="Add an internal note about this booking…"></textarea>
+
+    <div class="button-row">
+      <button type="button" id="d-save" data-i18n="dash.save">Save changes</button>
+      <span class="save-message" id="d-saved" hidden data-i18n="dash.saved">Saved.</span>
+      <span class="error" id="d-save-error" hidden>Could not save. Please try again.</span>
+    </div>
+
+    <p class="eyebrow" style="margin-top:22px" data-i18n="dash.historyTitle">Status history</p>
+    <ul class="history-list" id="d-history"></ul>
+  </div>
+</div>
+
+<!-- Calendar day modal -->
+<div class="modal-backdrop" id="day-modal">
+  <div class="modal-panel">
+    <button type="button" class="modal-close" id="day-close" aria-label="Close">×</button>
+    <p class="eyebrow"><span data-i18n="cal.bookingsOn">Bookings on</span> <span id="day-modal-date"></span></p>
+    <ul class="mini-list" id="day-modal-list"></ul>
+  </div>
+</div>
+
+<!-- Customer detail modal -->
+<div class="modal-backdrop" id="customer-modal">
+  <div class="modal-panel">
+    <button type="button" class="modal-close" id="customer-close" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="cust.history">Booking history</p>
+    <h1 id="cust-modal-name" style="font-size:20px;margin-top:4px"></h1>
+    <p class="muted" id="cust-modal-phone"></p>
+    <ul class="mini-list" id="cust-modal-list"></ul>
+  </div>
+</div>
+
+<script src="../js/supabase-config.js"></script>
+<script src="../js/supabase-notes.js"></script>
+<script src="../js/supabase-data.js"></script>
+<script src="../js/demo-i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
