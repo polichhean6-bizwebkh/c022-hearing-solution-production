@@ -659,11 +659,173 @@ document.addEventListener("DOMContentLoaded", function () {
     showLogin();
   });
 
+  /* ================= FORGOT / RESET PASSWORD ================= */
+  var forgotModal = document.getElementById("forgot-password-modal");
+  var forgotForm = document.getElementById("forgot-form");
+  var forgotEmail = document.getElementById("forgot-email");
+  var forgotError = document.getElementById("forgot-error");
+  var forgotSuccess = document.getElementById("forgot-success");
+  var forgotSubmit = document.getElementById("forgot-submit");
+  var forgotLink = document.getElementById("forgot-password-link");
+  var forgotClose = document.getElementById("forgot-close");
+
+  var resetModal = document.getElementById("reset-password-modal");
+  var resetForm = document.getElementById("reset-form");
+  var resetPw1 = document.getElementById("reset-password-1");
+  var resetPw2 = document.getElementById("reset-password-2");
+  var resetError = document.getElementById("reset-error");
+  var resetSuccess = document.getElementById("reset-success");
+  var resetSubmit = document.getElementById("reset-submit");
+  var resetCancel = document.getElementById("reset-cancel");
+
+  function openForgotModal() {
+    loginScreen.style.display = "none";
+    forgotError.hidden = true;
+    forgotSuccess.hidden = true;
+    forgotForm.hidden = false;
+    forgotEmail.value = "";
+    forgotSubmit.disabled = false;
+    forgotSubmit.textContent = "Send Reset Link";
+    forgotModal.classList.add("is-open");
+    forgotModal.style.display = "flex";
+  }
+  function closeForgotModal() {
+    forgotModal.classList.remove("is-open");
+    forgotModal.style.display = "none";
+    loginScreen.style.display = "";
+  }
+
+  forgotLink.addEventListener("click", openForgotModal);
+  forgotClose.addEventListener("click", closeForgotModal);
+
+  forgotForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    forgotError.hidden = true;
+    forgotSuccess.hidden = true;
+    var email = forgotEmail.value.trim();
+    if (!email) return;
+
+    forgotSubmit.disabled = true;
+    forgotSubmit.textContent = "Sending…";
+    try {
+      await Auth.resetPasswordForEmail(email);
+    } catch (err) {
+      // Swallow the error detail — never reveal whether an account exists
+      // for this email. The generic message below is shown either way.
+    }
+    forgotForm.hidden = true;
+    forgotSuccess.textContent = "If an account exists for this email, a password reset link has been sent.";
+    forgotSuccess.hidden = false;
+  });
+
+  function isRecoveryLink() {
+    return /type=recovery/.test(window.location.hash) || /type=recovery/.test(window.location.search);
+  }
+
+  function cleanRecoveryParamsFromUrl() {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  function openResetModal() {
+    loginScreen.style.display = "none";
+    forgotModal.style.display = "none";
+    forgotModal.classList.remove("is-open");
+    appShell.style.display = "none";
+    resetError.hidden = true;
+    resetSuccess.hidden = true;
+    resetForm.hidden = false;
+    resetPw1.value = "";
+    resetPw2.value = "";
+    resetPw1.type = "password";
+    resetPw2.type = "password";
+    document.getElementById("toggle-pw-1").textContent = "Show";
+    document.getElementById("toggle-pw-2").textContent = "Show";
+    resetSubmit.disabled = false;
+    resetSubmit.textContent = "Update Password";
+    resetModal.classList.add("is-open");
+    resetModal.style.display = "flex";
+  }
+
+  function closeResetModalToLogin() {
+    resetModal.classList.remove("is-open");
+    resetModal.style.display = "none";
+    cleanRecoveryParamsFromUrl();
+    showLogin();
+  }
+
+  resetForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    resetError.hidden = true;
+    var pw1 = resetPw1.value;
+    var pw2 = resetPw2.value;
+    if (pw1.length < 8) {
+      resetError.textContent = "Password must be at least 8 characters.";
+      resetError.hidden = false;
+      return;
+    }
+    if (pw1 !== pw2) {
+      resetError.textContent = "Passwords do not match.";
+      resetError.hidden = false;
+      return;
+    }
+
+    resetSubmit.disabled = true;
+    resetSubmit.textContent = "Updating…";
+    try {
+      var res = await Auth.updateUserPassword(pw1);
+      if (res.error) {
+        resetError.textContent = "Could not update password. Please request a new reset link.";
+        resetError.hidden = false;
+        resetSubmit.disabled = false;
+        resetSubmit.textContent = "Update Password";
+        return;
+      }
+      resetForm.hidden = true;
+      resetSuccess.textContent = "Your password has been updated. Please sign in with your new password.";
+      resetSuccess.hidden = false;
+      await Auth.signOut();
+      setTimeout(closeResetModalToLogin, 2500);
+    } catch (err) {
+      resetError.textContent = "Something went wrong. Please try again.";
+      resetError.hidden = false;
+      resetSubmit.disabled = false;
+      resetSubmit.textContent = "Update Password";
+    }
+  });
+
+  resetCancel.addEventListener("click", async function () {
+    await Auth.signOut();
+    closeResetModalToLogin();
+  });
+
+  function wireShowHide(btnId, inputId) {
+    var btn = document.getElementById(btnId);
+    var input = document.getElementById(inputId);
+    btn.addEventListener("click", function () {
+      var isPw = input.type === "password";
+      input.type = isPw ? "text" : "password";
+      btn.textContent = isPw ? "Hide" : "Show";
+    });
+  }
+  wireShowHide("toggle-pw-1", "reset-password-1");
+  wireShowHide("toggle-pw-2", "reset-password-2");
+
   Auth.onAuthStateChange(function (event) {
-    if (event === "SIGNED_OUT") showLogin();
+    if (event === "PASSWORD_RECOVERY") {
+      openResetModal();
+    } else if (event === "SIGNED_OUT") {
+      showLogin();
+    }
   });
 
   (async function initAuthGate() {
+    if (isRecoveryLink()) {
+      // A password-recovery link is being processed. Don't auto-open the
+      // dashboard — wait for the PASSWORD_RECOVERY auth event above, which
+      // opens the Reset Password screen instead.
+      loginScreen.style.display = "none";
+      return;
+    }
     var session = await Auth.getSession();
     if (session) {
       await showDashboard();

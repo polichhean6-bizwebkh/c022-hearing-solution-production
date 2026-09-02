@@ -25,9 +25,56 @@
       <input type="email" id="login-email" autocomplete="username" required>
       <label for="login-password">Password</label>
       <input type="password" id="login-password" autocomplete="current-password" required>
+      <button type="button" class="reset-link" id="forgot-password-link" style="padding-left:0">Forgot Password?</button>
       <p class="error" id="login-error" hidden></p>
       <div class="button-row">
         <button type="submit" id="login-submit">Sign In</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Forgot password: request a reset link by email -->
+<div class="modal-backdrop" id="forgot-password-modal" style="position:fixed;z-index:9999">
+  <div class="modal-panel" style="max-width:380px">
+    <button type="button" class="modal-close" id="forgot-close" aria-label="Close">×</button>
+    <p class="eyebrow">Hearing Solution Cambodia</p>
+    <h1 style="font-size:20px;margin-top:4px">Reset Your Password</h1>
+    <p class="muted">Enter your admin email address and, if an account exists, we'll send a link to reset your password.</p>
+    <form id="forgot-form" novalidate>
+      <label for="forgot-email">Email Address</label>
+      <input type="email" id="forgot-email" autocomplete="username" required>
+      <p class="error" id="forgot-error" hidden></p>
+      <p class="muted" id="forgot-success" hidden style="color:#1a7f37"></p>
+      <div class="button-row">
+        <button type="submit" id="forgot-submit">Send Reset Link</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reset password: shown when a Supabase recovery link is opened -->
+<div class="modal-backdrop" id="reset-password-modal" style="position:fixed;z-index:9999">
+  <div class="modal-panel" style="max-width:380px">
+    <p class="eyebrow">Hearing Solution Cambodia</p>
+    <h1 style="font-size:20px;margin-top:4px">Reset Password</h1>
+    <p class="muted">Choose a new password for your admin account.</p>
+    <form id="reset-form" novalidate>
+      <label for="reset-password-1">New Password</label>
+      <div style="position:relative">
+        <input type="password" id="reset-password-1" autocomplete="new-password" required minlength="8" style="padding-right:56px">
+        <button type="button" class="reset-link" id="toggle-pw-1" style="position:absolute;right:0;top:0" tabindex="-1">Show</button>
+      </div>
+      <label for="reset-password-2">Confirm New Password</label>
+      <div style="position:relative">
+        <input type="password" id="reset-password-2" autocomplete="new-password" required minlength="8" style="padding-right:56px">
+        <button type="button" class="reset-link" id="toggle-pw-2" style="position:absolute;right:0;top:0" tabindex="-1">Show</button>
+      </div>
+      <p class="error" id="reset-error" hidden></p>
+      <p class="muted" id="reset-success" hidden style="color:#1a7f37"></p>
+      <div class="button-row">
+        <button type="submit" id="reset-submit">Update Password</button>
+        <button type="button" class="reset-link" id="reset-cancel">Cancel</button>
       </div>
     </form>
   </div>
