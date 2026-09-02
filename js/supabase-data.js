@@ -299,6 +299,17 @@
     },
     onAuthStateChange: function (cb) {
       return sb.auth.onAuthStateChange(cb);
+    },
+    /* ---- Forgot / reset password (Supabase Auth built-in recovery flow) ----
+       No custom token handling, nothing stored in localStorage — Supabase's
+       client library manages the recovery session internally. */
+    resetPasswordForEmail: function (email) {
+      return sb.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://hearingsolutioncambodia.com/admin/"
+      });
+    },
+    updateUserPassword: function (newPassword) {
+      return sb.auth.updateUser({ password: newPassword });
     }
   };
 })(window);
